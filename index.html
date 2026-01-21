@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Albion ZvZ Reaction Trainer</title>
+
+<style>
+  body {
+    background: black;
+    color: white;
+    text-align: center;
+    font-family: Arial, sans-serif;
+  }
+
+  video {
+    width: 80%;
+    margin-top: 20px;
+    border: 2px solid white;
+  }
+
+  #status {
+    font-size: 28px;
+    margin-top: 20px;
+  }
+</style>
+</head>
+
+<body>
+
+<h1>Albion ZvZ Reaction Trainer</h1>
+<p>Naciśnij <b>F</b> gdy guślarz dotknie ziemi</p>
+
+<!-- VIDEO – bez <source>, JS ustawia src -->
+<video id="video" controls></video>
+
+<div id="status">Czekam…</div>
+
+<script>
+const clips = [
+  {
+    file: "./zvz1.mp4",
+    key: "f",
+    windowStart: 5.5,
+    windowLength: 0.5
+  },
+  {
+    file: "./zvz2.mp4",
+    key: "f",
+    windowStart: 1.0,
+    windowLength: 0.5
+  }
+];
+
+let order = [];
+let currentIndex = 0;
+let state = "waiting"; // waiting | playing | resolved
+let reacted = false;
+
+const video = document.getElementById("video");
+const status = document.getElementById("status");
+
+/* LOSOWA KOLEJNOŚĆ */
+function shuffle(array) {
+  return array
+    .map(v => ({ v, r: Math.random() }))
+    .sort((a, b) => a.r - b.r)
+    .map(x => x.v);
+}
+
+/* START CAŁEGO RUNU */
+function startRun() {
+  order = shuffle([...clips]);
+  currentIndex = 0;
+  askReady();
+}
+
+/* PYTANIE GOTOWOŚCI */
+function askReady() {
+  state = "waiting";
+  reacted = false;
+
+  video.pause();
+  video.removeAttribute("src");
+  video.load();
+
+  status.textContent = "👉 JESTEŚ GOTOWY? (naciśnij G)";
+}
+
+/* START KLIPU */
+function startClip() {
+  const clip = order[currentIndex];
+  reacted = false;
+  state = "playing";
+
+  video.src = clip.file;
+  video.load();
+  video.play();
+
+  status.textContent = `KLAWISZ: ${clip.key.toUpperCase()}`;
+}
+
+/* OBSŁUGA KLAWISZY */
+document.addEventListener("keydown", (e) => {
+  const key = e.key.toLowerCase();
+
+  if (state === "waiting" && key === "g") {
+    startClip();
+    return;
+  }
+
+  if (state !== "playing" || reacted) return;
+
+  const clip = order[currentIndex];
+  const time = video.currentTime;
+  const windowEnd = clip.windowStart + clip.windowLength;
+
+  if (key === clip.key) {
+    reacted = true;
+    state = "resolved";
+
+    if (time >= clip.windowStart && time <= windowEnd) {
+      status.textContent = "✅ GOOD";
+    } else {
+      status.textContent = "❌ FAIL";
+    }
+  }
+});
+
+/* KONIEC WIDEO */
+video.addEventListener("ended", () => {
+  if (state !== "resolved") {
+    status.textContent = "❌ FAIL";
+  }
+
+  setTimeout(() => {
+    if (status.textContent.includes("FAIL")) {
+      askReady(); // powtórz ten sam
+    } else {
+      currentIndex++;
+      if (currentIndex < order.length) {
+        askReady();
+      } else {
+        status.textContent = "🏆 RUN ZAKOŃCZONY";
+        setTimeout(startRun, 2000);
+      }
+    }
+  }, 1200);
+});
+
+startRun();
+</script>
+
+</body>
+</html>
