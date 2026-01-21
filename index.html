@@ -23,21 +23,20 @@
     margin-top: 20px;
   }
 
-  {
-  position: fixed;
-  inset: 0;
-  background: url("background.png") center/cover no-repeat;
-  filter: blur(4px) brightness(0.4);
-  z-index: -1;
-}
-  
+  #bg {
+    position: fixed;
+    inset: 0;
+    background: url("background.png") center/cover no-repeat;
+    filter: blur(4px) brightness(0.4);
+    z-index: -1;
+  }
 </style>
 </head>
 
 <body>
 
-<div id="bg">
-  
+<div id="bg"></div>
+
 <h1>Albion ZvZ Reaction Trainer</h1>
 <p>Naciśnij <b>F</b> gdy guślarz dotknie ziemi</p>
 
@@ -160,6 +159,7 @@ video.addEventListener("ended", () => {
 
 startRun();
 </script>
-</div>
+
 </body>
 </html>
+
